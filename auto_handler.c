@@ -22,6 +22,7 @@ enum SearchEvent {
     EVENT_CALC
 };
 
+void set_stage(int [][STAGE_BLOCK_COL]);
 void calc_route(ITEMS *, int [][STAGE_BLOCK_COL]);
 void print_goal();
 
@@ -40,7 +41,7 @@ void auto_handler()
 
     ITEMS obj = {&robot, &ball, &hole, &wall};
     
-    int stage[STAGE_BLOCK_ROW][STAGE_BLOCK_COL] = {};
+    int stage[STAGE_BLOCK_ROW][STAGE_BLOCK_COL];
     int route[2][2];
     
     ev3_lcd_draw_string("Auto mode runnnig", 0, l_font_property.height * 3);
@@ -50,7 +51,7 @@ void auto_handler()
     tslp_tsk(1000);
 
 	while (!ev3_button_is_pressed(ENTER_BUTTON)) {
-            ev3_lcd_draw_string("READY? (push entry button)", 0, l_font_property.height * 4);
+        ev3_lcd_draw_string("READY? (push entry button)", 0, l_font_property.height * 4);
     }
 
 	ev3_motor_rotate(PORT_ARM_MOTOR, -360, 100, true);
@@ -92,15 +93,40 @@ void auto_handler()
     }
 }
 
+void set_stage(int stage[][STAGE_BLOCK_COL])
+{
+    for (int i = 0; i < STAGE_BLOCK_ROW; i++) {
+        for (int j = 0; j < STAGE_BLOCK_COL; j++) {
+            stage[i][j] = (j + i * 2) % 5;
+        }
+    }
+    // 012340123
+    // 234012340
+    // 401234012
+    // 123401234
+    // 340123401
+    // 012340123
+}
+
 void calc_route(ITEMS *obj, int stage[][STAGE_BLOCK_COL])
 {
-    if (obj->wall->width == 0 && obj->wall->height == 0) {    // wall is none //
-        obj->robot->route[0][0] = sqrt(pow(obj->hole->x - obj->robot->x, 2) + pow(obj->hole->y - obj->robot->y, 2));
-        obj->robot->route[0][1] = 0;
+    int straight;
 
-        obj->robot->route[1][0] = 0;
-        obj->robot->route[1][1] = 0;
+    if (obj->wall->width == 0 && obj->wall->height == 0) {    // wall is none //
+        straight = 1;
     }
+    else {  // wall is paralle to the stage //
+        if (obj->wall->x == 0) {
+            if (obj->ball->y < obj->wall->y) straight = 0;
+            else straight = 1;
+        }
+        else if (obj->wall->y == 0) {
+            if (obj->ball->x < obj->wall->x) straight = 0;
+            else straight = 1;
+        }
+    }
+
+    // if straight is 0, line ball to arch. else, line ball to hole.   //
 }
 
 void print_goal()

@@ -4,8 +4,6 @@
 #include "system.h"
 #include "bluetooth.h"
 
-int calc_swing_power();
-
 void hit_ball(char *chr)
 {
 	int power;
@@ -72,21 +70,10 @@ void move_task(ROBOT *robot)
 	// usonic end//
 }
 
-void swing_task()
+void swing_task(ROBOT *robot, OBJECT *ball, int x, int y)
 {
-	int power = calc_swing_power();
+	int power = 100 * sqrt(pow(x - ball->x, 2) + pow(y - ball->y, 2)) / (180 * 1.4142);
+	int sign;	// 1(+) or -1(-)	//
 
-	// ev3_motor_rotate(PORT_ARM_MOTOR, 360, power, false);
-}
-
-int calc_swing_power()
-{
-	int res = 30;
-
-	return res;
-}
-
-void move_next_posi()
-{
-
+	ev3_motor_rotate(PORT_ARM_MOTOR, 360 * sign, power, false);
 }
